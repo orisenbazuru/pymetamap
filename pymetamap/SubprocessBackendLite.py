@@ -25,7 +25,8 @@ class SubprocessBackendLite(MetaMapLite):
         MetaMapLite.__init__(self, metamap_filename=metamap_filename)
 
     def extract_concepts(self, sentences=None, ids=None, filename=None,
-                         restrict_to_sts=None, restrict_to_sources=None):
+                         restrict_to_sts=None, restrict_to_sources=None, 
+                         git_bash_pth=None):
         """ extract_concepts takes a list of sentences and ids(optional)
             then returns a list of Concept objects extracted via
             MetaMapLite.
@@ -51,12 +52,22 @@ class SubprocessBackendLite(MetaMapLite):
             input_file = tempfile.NamedTemporaryFile(mode="wb", delete=False)
         else:
             input_file = open(filename, 'r')
+        if(git_bash_pth is None):
+            if(os.name == 'nt'): # case of Windows OS
+                # prerequisite on Windows OS is to install Git bash 
+                # use default installation directory if user did not specify path
+                bash_cmd = 'C:\Program Files\Git\git-bash.exe'
+            else:
+                bash_cmd = 'bash'
+        else:
+            bash_cmd = git_bash_pth # a user specified bash path!
 
         # Unlike MetaMap, MetaMapLite does not take an output filename as a parameter.
         # It creates a new output file at same location as "input_file" with the default file extension ".mmi".
         # output_file = tempfile.NamedTemporaryFile(mode="r", delete=False)
         output_file_name = None
         error = None
+        # print(input_file)
         try:
             if sentences is not None:
                 if ids is not None:
@@ -67,7 +78,8 @@ class SubprocessBackendLite(MetaMapLite):
                         input_file.write('{0!r}\n'.format(sentence).encode('utf8'))
                 input_file.flush()
 
-            command = ["bash", os.path.join(self.metamap_filename, "metamaplite.sh")]
+            command = [bash_cmd, os.path.join(self.metamap_filename, "metamaplite.sh")]
+
             if restrict_to_sts:
                 if isinstance(restrict_to_sts, str):
                     restrict_to_sts = [restrict_to_sts]
@@ -87,7 +99,7 @@ class SubprocessBackendLite(MetaMapLite):
 
             command.append(input_file.name)
             # command.append(output_file.name)
-
+            # print("command ", command)
             metamap_process = subprocess.Popen(command, stdout=subprocess.PIPE)
             while metamap_process.poll() is None:
                 stdout = str(metamap_process.stdout.readline())
@@ -104,11 +116,10 @@ class SubprocessBackendLite(MetaMapLite):
             # output = str(output_file.read())
             # print("output: {0}".format(output))
         finally:
+            input_file.close()
             if sentences is not None:
+                # print("sentences ", sentences)
                 os.remove(input_file.name)
-            else:
-                input_file.close()
-            # os.remove(output_file.name)
             os.remove(output_file_name)
 
         concepts = CorpusLite.load(output.splitlines())

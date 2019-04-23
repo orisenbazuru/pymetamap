@@ -165,10 +165,9 @@ class SubprocessBackend(MetaMap):
                     error = stdout.rstrip()
             output = str(output_file.read())
         finally:
+            input_file.close()
             if sentences is not None:
                 os.remove(input_file.name)
-            else:
-                input_file.close()
             os.remove(output_file.name)
 
         concepts = Corpus.load(output.splitlines())
