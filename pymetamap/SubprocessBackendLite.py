@@ -18,15 +18,14 @@ from .ConceptLite import CorpusLite
 
 
 class SubprocessBackendLite(MetaMapLite):
-    def __init__(self, metamap_filename):
+    def __init__(self, metamap_filename, git_bash_pth=None):
         """ Interface to MetaMap using subprocess. This creates a
             command line call to a specified metamap process.
         """
-        MetaMapLite.__init__(self, metamap_filename=metamap_filename)
+        MetaMapLite.__init__(self, metamap_filename=metamap_filename, git_bash_pth=git_bash_pth)
 
     def extract_concepts(self, sentences=None, ids=None, filename=None,
-                         restrict_to_sts=None, restrict_to_sources=None, 
-                         git_bash_pth=None):
+                         restrict_to_sts=None, restrict_to_sources=None):
         """ extract_concepts takes a list of sentences and ids(optional)
             then returns a list of Concept objects extracted via
             MetaMapLite.
@@ -52,21 +51,13 @@ class SubprocessBackendLite(MetaMapLite):
             input_file = tempfile.NamedTemporaryFile(mode="wb", delete=False)
         else:
             input_file = open(filename, 'r')
-        if(git_bash_pth is None):
-            if(os.name == 'nt'): # case of Windows OS
-                # prerequisite on Windows OS is to install Git bash 
-                # use default installation directory if user did not specify path
-                bash_cmd = 'C:\Program Files\Git\git-bash.exe'
-            else:
-                bash_cmd = 'bash'
-        else:
-            bash_cmd = git_bash_pth # a user specified bash path!
 
         # Unlike MetaMap, MetaMapLite does not take an output filename as a parameter.
         # It creates a new output file at same location as "input_file" with the default file extension ".mmi".
         # output_file = tempfile.NamedTemporaryFile(mode="r", delete=False)
         output_file_name = None
         error = None
+        bash_cmd = self.bash_cmd
         # print(input_file)
         try:
             if sentences is not None:

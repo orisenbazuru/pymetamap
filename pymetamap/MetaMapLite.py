@@ -11,6 +11,7 @@
 # limitations under the License.
 
 import abc
+import os
 from os.path import isabs
 
 
@@ -24,9 +25,22 @@ class MetaMapLite:
     """
     __metaclass__ = abc.ABCMeta
 
-    def __init__(self, metamap_filename):
+    def __init__(self, metamap_filename, git_bash_pth=None):
         self.metamap_filename = str(metamap_filename)
         assert isabs(self.metamap_filename), "metamap_filename: {0} should be an absolute path".format(self.metamap_filename)
+        self.bash_cmd = self._get_bash_cmd(git_bash_pth)
+
+    def _get_bash_cmd(self, git_bash_pth):
+        if(git_bash_pth is None):
+            if(os.name == 'nt'): # case of Windows OS
+                # prerequisite on Windows OS is to install Git bash 
+                # use default installation directory if user did not specify path
+                bash_cmd = 'C:\Program Files\Git\git-bash.exe'
+            else: # case of MAC/Linux OS
+                bash_cmd = 'bash'
+        else:
+            bash_cmd = git_bash_pth # a user specified bash path!
+        return bash_cmd
 
     @abc.abstractmethod
     def extract_concepts(self, sentences=None, ids=None, filename=None):
@@ -35,9 +49,9 @@ class MetaMapLite:
 
     @staticmethod
     def get_instance(metamap_filename, backend='subprocess', **extra_args):
-        extra_args.update(metamap_filename=metamap_filename)
+        extra_args.update(metamap_filename=metamap_filename, git_bash_pth=extra_args.get('git_bash_pth', None))
+        # print("extra_args ", extra_args)
         assert isabs(metamap_filename), "metamap_filename: {0} should be an absolute path".format(metamap_filename)
-
         if backend == 'subprocess':
             from .SubprocessBackendLite import SubprocessBackendLite
             return SubprocessBackendLite(**extra_args)

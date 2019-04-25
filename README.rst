@@ -3,33 +3,34 @@
 Windows OS
 ----------
 
-This fork is tested running MetaMapLite on Windows OS. A prerequisite is to install `Git Bash <https://gitforwindows.org/>`_. 
+This fork is tested running **MetaMapLite on Windows OS**. A prerequisite is to install `Git Bash <https://gitforwindows.org/>`_. 
 
 Example Usage
 -------------
 
-Create a MetaMap instance from the pymetamap package.
+Create a MetaMap instance from the pymetamap package. We can optionally specify the path to Git Bash (by default it is under ``C:\Program Files\Git\git-bash.exe``).
+That is, if Git bash is found under different directory we can specify that using ``git_bash_pth`` keyword argument
 
 .. code-block:: python
 
    from pymetamap import MetaMapLite
-   mm = MetaMapLite.get_instance('C:/Users/Username/path/to/metamap_lite') # Notice use forward slash!!
+   # Use forward slash when specifying the absolute path to MetaMap lite folder
+   # Specify the path where Git Bash is installed using ``git_bash_pth`` keyword argument. By default it is under 'C:\Program Files\Git\git-bash.exe'
+   mm = MetaMapLite.get_instance('C:/Users/Username/path/to/metamap_lite', git_bash_pth='C:\Program Files\Git\git-bash.exe') 
 
-To extract concepts, we can optionally specify the path to Git Bash (by default it is under ``C:\Program Files\Git\git-bash.exe``).
-That is, if Git bash is found under different directory we can specify that when calling ``extract_concepts`` function.
+To extract concepts, we run the following:
 
 .. code-block:: python
 
    # file_pth is the path to file that contains the sentences to parse
-   # git_bash_pth is by default 'C:\Program Files\Git\git-bash.exe' within extract_concepts function
-   concepts, error = mm.extract_concepts(filename=file_pth, git_bash_pth='C:\Program Files\Git\git-bash.exe')
+   concepts, error = mm.extract_concepts(filename=file_pth)
    # print 
    ConceptLiteMMI(index=file_pth, mm='MMI', score='3.75', preferred_name='Myocardial Infarction', cui='C0027051', semtypes='[dsyn]', trigger='"Heart Attack"-text-0-"heart attack"-NN-0', pos_info='16/12', tree_codes='C14.280.647.500;C14.907.585.500')
 
 .. code-block:: python
 
    sents = ['Heart Attack', 'John had a huge heart attack']
-   concepts,error = mm.extract_concepts(sents,[1,2], git_bash_pth='C:\Program Files\Git\git-bash.exe')
+   concepts,error = mm.extract_concepts(sents,[1,2])
    for concept in concepts:
        print(concept)
    # prints
